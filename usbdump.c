@@ -117,6 +117,17 @@ void process_packet(struct usbmon_packet *hdr, char *data)
 		"%s%d %s ", (hdr->epnum & USB_DIR_IN) ? "<--" : "-->",
 		hdr->epnum & 0x7f, pretty_xfertype[hdr->xfer_type]);
 
+	if (hdr->xfer_type == 2 /* Control */) {
+		const unsigned char *const s = hdr->s.setup;
+		line_len += snprintf(linebuf + line_len, LINEBUF_LEN - line_len,
+			"[%.2x %.2x %.2x%.2x %.2x%.2x] ",
+			s[0],		/* bmRequestType */
+			s[1],		/* bRequest */
+			s[2], s[3],	/* wValue */
+			s[4], s[5]	/* wIndex */
+			);
+	}
+
 	if (hdr->len_cap > 0) {
 		if (hdr->len_cap == hdr->length)
 			line_len += snprintf(linebuf + line_len,
