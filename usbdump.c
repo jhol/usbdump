@@ -45,14 +45,12 @@ int64_t start_ts = 0;
 int32_t start_ts_us = 0;
 char **lines = {0};
 
-
 char *pretty_xfertype[] = {
 	" iso",
 	"intr",
 	"ctrl",
 	"bulk"
 };
-
 
 void hexdump(char *linebuf, size_t linebuf_size, void *address, int length)
 {
@@ -73,7 +71,6 @@ void hexdump(char *linebuf, size_t linebuf_size, void *address, int length)
 		linebuf += snprintf(linebuf, lineend - linebuf, "%.2x", buf[i]);
 	}
 }
-
 
 void process_packet(struct usbmon_packet *hdr, char *data)
 {
@@ -180,7 +177,6 @@ void process_packet(struct usbmon_packet *hdr, char *data)
 
 }
 
-
 void usb_sniff(bus, address)
 {
 	struct mon_mfetch_arg mfetch;
@@ -233,7 +229,6 @@ void usb_sniff(bus, address)
 
 }
 
-
 int check_device(struct dirent *de, char *vidpid, int *bus, int *address)
 {
 	int fd;
@@ -280,7 +275,6 @@ int check_device(struct dirent *de, char *vidpid, int *bus, int *address)
 	return 1;
 }
 
-
 int find_device(char *vidpid, int *bus, int *address)
 {
 	DIR *dir;
@@ -303,13 +297,10 @@ int find_device(char *vidpid, int *bus, int *address)
 	return found;
 }
 
-
 void usage(void)
 {
-
 	printf("usbdump Copyright (C) 2011 Bert Vermeulen <bert@biot.com>\n");
 	printf("usage: usbdump -d <vid:pid> [-u <num lines>]\n");
-
 }
 
 int main(int argc, char **argv)
@@ -343,6 +334,3 @@ int main(int argc, char **argv)
 
 	return 0;
 }
-
-
-
