@@ -115,10 +115,9 @@ void process_packet(struct usbmon_packet *hdr, char *data)
 		ts_us = 1000000 + ts_us;
 	}
 
-	if (hdr->epnum & USB_DIR_IN)
-		snprintf(linebuf+strlen(linebuf), LINEBUF_LEN-strlen(linebuf), "%d<-- ", hdr->epnum & 0x7f);
-	else
-		snprintf(linebuf+strlen(linebuf), LINEBUF_LEN-strlen(linebuf), "-->%d ", hdr->epnum & 0x7f);
+	snprintf(linebuf+strlen(linebuf), LINEBUF_LEN-strlen(linebuf),
+		"%s%d %s ", (hdr->epnum & USB_DIR_IN) ? "<--" : "-->",
+		hdr->epnum & 0x7f, pretty_xfertype[hdr->xfer_type]);
 
 	if (hdr->len_cap > 0) {
 		if (hdr->len_cap == hdr->length)
