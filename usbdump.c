@@ -44,6 +44,7 @@ int opt_unique_num = 0;
 int64_t start_ts = 0;
 int32_t start_ts_us = 0;
 char **lines = {0};
+uint16_t wValue = 0, wIndex = 0;
 
 char *pretty_xfertype[] = {
 	" iso",
@@ -81,8 +82,19 @@ void process_packet(struct usbmon_packet *hdr, char *data)
 	char *linebuf;
 	int line_len = 0;
 
-	/* basic direction filtering, but not for control packets */
-	if (hdr->xfer_type != XFER_TYPE_CONTROL) {
+	if (hdr->xfer_type == XFER_TYPE_CONTROL) {
+		if  (hdr->flag_setup == 0) {
+			const unsigned char *const s = hdr->s.setup;
+			wValue = s[3] << 8 | s[2];
+			wIndex = s[5] << 8 | s[4];
+			if (hdr->epnum & USB_DIR_IN)
+				return;
+		}
+		/* ignore ACKs to a control write packet */
+		if (!(hdr->epnum & USB_DIR_IN) && hdr->type == 'C')
+			return;
+	} else {
+		/* non-CONTROL direction filtering */
 		if (hdr->epnum & USB_DIR_IN) {
 			if (hdr->type == 'S')
 				/* read request */
@@ -114,13 +126,10 @@ void process_packet(struct usbmon_packet *hdr, char *data)
 		"%s%d %s ", (hdr->epnum & USB_DIR_IN) ? "<--" : "-->",
 		hdr->epnum & 0x7f, pretty_xfertype[hdr->xfer_type]);
 
-	if (hdr->xfer_type == 2 /* Control */) {
-		const unsigned char *const s = hdr->s.setup;
-		line_len += snprintf(linebuf + line_len, LINEBUF_LEN - line_len,
-			"[%.2x%.2x %.2x%.2x] ",
-			s[3], s[2],	/* wValue */
-			s[5], s[4]	/* wIndex */
-			);
+	if (hdr->xfer_type == XFER_TYPE_CONTROL) {
+		line_len += snprintf(linebuf + line_len,
+			LINEBUF_LEN - line_len,
+			"[%.4x %.4x] ", wValue, wIndex);
 	}
 
 	if (hdr->len_cap > 0) {
