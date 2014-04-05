@@ -1,0 +1,27 @@
+usbdump is a simple frontend for the linux kernel's usbmon facility.
+It aims to summarize and remove irrelevant lines and fields where
+possible.
+
+To compile, simply type
+
+	make usbdump
+
+At least one argument is required: the USB device to monitor, specified
+by its vid/pid. Use the 'lsusb' command to get a list of these. Basic
+usage is thus:
+
+	usbdump -d <vid:pid>
+
+A long sequence of identical output can be summarized by a running
+counter instead, by using the -u (unique) option to specify the number
+of lines in the output to compare. For example, if a device constantly
+polls on one endpoint and receives a reply on another, but both lines
+are always the same in an idle state of the device, you can summarize
+the output like this:
+
+	usbdump -d <vid:pid> -u 2
+
+usbdump is copyright (C) 2011 by Bert Vermeulen <bert@biot.com>, and is
+licensed under the terms of the GNU General Public License version 3.
+See the file COPYING for more information.
+
