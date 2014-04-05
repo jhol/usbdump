@@ -54,26 +54,23 @@ char *pretty_xfertype[] = {
 };
 
 
-void hexdump(char *linebuf, void *address, int length)
+void hexdump(char *linebuf, size_t linebuf_size, void *address, int length)
 {
-	int n, i;
-	unsigned char *buf;
-
-	n = strlen(linebuf);
-	buf = address;
+	int i;
+	unsigned char *buf = address;
+	const char* const lineend = linebuf + linebuf_size;
 	for (i = 0; i < length; i++) {
-		if (n > LINEBUF_LEN - 4)
-			continue;
+		if (lineend - linebuf < 4)
+			break;
 		if (i && !(i & 0x01)) {
-			linebuf[n++] = ' ';
-			linebuf[n] = '\0';
+			*linebuf++ = ' ';
+			*linebuf = '\0';
 		}
 		if (i && !(i & 0x0f)) {
-			linebuf[n++] = ' ';
-			linebuf[n] = '\0';
+			*linebuf++ = ' ';
+			*linebuf = '\0';
 		}
-		snprintf(linebuf+n, LINEBUF_LEN-n, "%.2x", buf[i]);
-		n += 2;
+		linebuf += snprintf(linebuf, lineend - linebuf, "%.2x", buf[i]);
 	}
 }
 
@@ -85,6 +82,7 @@ void process_packet(struct usbmon_packet *hdr, char *data)
 	int64_t ts;
 	int32_t ts_us;
 	char *linebuf;
+	int line_len = 0;
 
 	/* basic direction filtering, but not for control packets */
 	if (hdr->xfer_type != XFER_TYPE_CONTROL) {
@@ -115,16 +113,21 @@ void process_packet(struct usbmon_packet *hdr, char *data)
 		ts_us = 1000000 + ts_us;
 	}
 
-	snprintf(linebuf+strlen(linebuf), LINEBUF_LEN-strlen(linebuf),
+	line_len += snprintf(linebuf + line_len, LINEBUF_LEN - line_len,
 		"%s%d %s ", (hdr->epnum & USB_DIR_IN) ? "<--" : "-->",
 		hdr->epnum & 0x7f, pretty_xfertype[hdr->xfer_type]);
 
 	if (hdr->len_cap > 0) {
 		if (hdr->len_cap == hdr->length)
-			snprintf(linebuf+strlen(linebuf), LINEBUF_LEN-strlen(linebuf), "%d: ", hdr->len_cap);
+			line_len += snprintf(linebuf + line_len,
+				LINEBUF_LEN - line_len, "%d: ",
+				hdr->len_cap);
 		else
-			snprintf(linebuf+strlen(linebuf), LINEBUF_LEN-strlen(linebuf), "%d/%d: ", hdr->len_cap, hdr->length);
-		hexdump(linebuf, data, hdr->len_cap);
+			line_len += snprintf(linebuf + line_len,
+				LINEBUF_LEN - line_len, "%d/%d: ",
+				hdr->len_cap, hdr->length);
+		hexdump(linebuf + line_len, LINEBUF_LEN - line_len,
+			data, hdr->len_cap);
 	}
 
 	if (opt_unique_num) {
