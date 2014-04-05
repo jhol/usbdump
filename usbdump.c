@@ -182,8 +182,8 @@ void process_packet(struct usbmon_packet *hdr, char *data)
 	else
 		printf("%3"PRId64".%.6d %s\n", ts, ts_us, linebuf);
 
+	fflush(stdout);
 	free(linebuf);
-
 }
 
 void usb_sniff(bus, address)
