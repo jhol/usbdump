@@ -120,11 +120,9 @@ void process_packet(struct usbmon_packet *hdr, char *data)
 	if (hdr->xfer_type == 2 /* Control */) {
 		const unsigned char *const s = hdr->s.setup;
 		line_len += snprintf(linebuf + line_len, LINEBUF_LEN - line_len,
-			"[%.2x %.2x %.2x%.2x %.2x%.2x] ",
-			s[0],		/* bmRequestType */
-			s[1],		/* bRequest */
-			s[2], s[3],	/* wValue */
-			s[4], s[5]	/* wIndex */
+			"[%.2x%.2x %.2x%.2x] ",
+			s[3], s[2],	/* wValue */
+			s[5], s[4]	/* wIndex */
 			);
 	}
 
