@@ -186,7 +186,7 @@ void process_packet(struct usbmon_packet *hdr, char *data)
 	free(linebuf);
 }
 
-void usb_sniff(bus, address)
+void usb_sniff(int bus, int address)
 {
 	struct mon_mfetch_arg mfetch;
 	struct usbmon_packet *hdr;
